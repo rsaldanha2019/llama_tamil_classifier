@@ -1,21 +1,18 @@
 import sys
-import os
-# Allow relative imports when running as a script
-from llama_tamil_classifier.model import LlamaClassifier  # Package execution
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QLabel, QTextEdit, QPushButton, QHBoxLayout
+    QApplication, QWidget, QVBoxLayout, QLabel, QTextEdit, QPushButton, QHBoxLayout, QCheckBox
 )
 from PySide6.QtGui import QTextCursor
 from PySide6.QtCore import Qt
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import transliterate
-from .model import LlamaClassifier  # Import your LLaMA Tamil classifier
+from llama_tamil_classifier.model import LlamaClassifier  
 
 class LlamaClassifierApp(QWidget):
     def __init__(self):
         super().__init__()
-        self.transliteration_enabled = True  # Toggle for transliteration
-        self.classifier = LlamaClassifier()  # Load classifier model
+        self.transliteration_enabled = True  
+        self.classifier = LlamaClassifier()  
         self.initUI()
 
     def initUI(self):
@@ -28,17 +25,19 @@ class LlamaClassifierApp(QWidget):
         self.label = QLabel("Enter Tamil or Tanglish (Press SPACE to convert):")
         layout.addWidget(self.label)
 
-        # **Text Box**
         self.text_box = QTextEdit()
+        self.text_box.setPlaceholderText("Type here...")
+        self.text_box.setMinimumHeight(100)  
         self.text_box.textChanged.connect(self.transliterate_on_space)
         layout.addWidget(self.text_box)
 
-        # **Controls: Toggle Transliteration + Classify**
         button_layout = QHBoxLayout()
 
-        self.translit_button = QPushButton("Disable Transliteration")
-        self.translit_button.clicked.connect(self.toggle_transliteration)
-        button_layout.addWidget(self.translit_button)
+        # ✅ Transliteration Checkbox
+        self.translit_checkbox = QCheckBox("Enable transliteration (English to Tamil)")
+        self.translit_checkbox.setChecked(True)
+        self.translit_checkbox.stateChanged.connect(self.toggle_transliteration)
+        button_layout.addWidget(self.translit_checkbox)
 
         self.classify_button = QPushButton("Classify")
         self.classify_button.clicked.connect(self.classify_text)
@@ -46,20 +45,21 @@ class LlamaClassifierApp(QWidget):
 
         layout.addLayout(button_layout)
 
-        self.result_label = QLabel("Prediction: ")
+        self.result_label = QLabel("Prediction:")
         layout.addWidget(self.result_label)
+
+        self.result_text = QTextEdit()
+        self.result_text.setReadOnly(True)
+        self.result_text.setMinimumHeight(120)  
+        layout.addWidget(self.result_text)
 
         self.setLayout(layout)
 
     def toggle_transliteration(self):
-        """Enable/Disable Transliteration."""
-        self.transliteration_enabled = not self.transliteration_enabled
-        self.translit_button.setText(
-            "Enable Transliteration" if not self.transliteration_enabled else "Disable Transliteration"
-        )
+        """Enable or disable transliteration based on checkbox state."""
+        self.transliteration_enabled = self.translit_checkbox.isChecked()
 
     def transliterate_on_space(self):
-        """Transliterate last word after pressing space, if enabled."""
         if not self.transliteration_enabled:
             return
 
@@ -78,11 +78,10 @@ class LlamaClassifierApp(QWidget):
                 self.text_box.blockSignals(False)
 
     def classify_text(self):
-        """Run LLaMA classification."""
         user_input = self.text_box.toPlainText().strip()
         if user_input:
             prediction = self.classifier.classify(user_input)
-            self.result_label.setText(f"Prediction: {prediction}")
+            self.result_text.setPlainText(prediction)
 
 def main():
     app = QApplication(sys.argv)

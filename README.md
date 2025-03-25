@@ -6,7 +6,7 @@
 
 #### Conda  
 ```bash
-conda create -n llama_tamil python=3.10 -y
+conda create -n llama_tamil python=3.11 -y
 conda activate llama_tamil
 ```
 #### venv
