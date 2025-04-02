@@ -5,7 +5,7 @@ from huggingface_hub import login
 
 class LlamaClassifier:
     def __init__(self):
-        login(token="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")
+        login(token="hf_your_key")
         MODEL_NAME = "meta-llama/Llama-3.2-3B-Instruct"
         
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
